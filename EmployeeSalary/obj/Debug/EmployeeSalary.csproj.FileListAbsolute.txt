@@ -1,0 +1,1 @@
+c:\users\vsevolod\documents\visual studio 2015\Projects\KonturIntro\EmployeeSalary\bin\Debug\EmployeeSalary.exe.config

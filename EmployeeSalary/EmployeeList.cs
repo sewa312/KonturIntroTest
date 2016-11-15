@@ -21,8 +21,8 @@ namespace EmployeeSalary
             XDocument xdoc = XDocument.Load(fileName);
             foreach (XElement employee in xdoc.Element("employees").Elements())
             {
-                XAttribute firstName = employee.Attribute("firstName");
-                XAttribute lastName = employee.Attribute("lastName");
+                XElement firstName = employee.Element("firstName");
+                XElement lastName = employee.Element("lastName");
                 XAttribute idAttribute = employee.Attribute("id");
                 
                 if (firstName == null || lastName == null || idAttribute == null)
@@ -35,7 +35,7 @@ namespace EmployeeSalary
                
                 Employee parsedEmployee;
                 decimal rate;
-                if (employee.Name == "fullTime")
+                if (employee.Name == EmployeeFullTime.TagName)
                 {
                     XElement wageRateMounth = employee.Element("wageRateMounth");
                     if (!decimal.TryParse(wageRateMounth.Value, out rate))
@@ -43,13 +43,13 @@ namespace EmployeeSalary
 
                     parsedEmployee = new EmployeeFullTime(id, lastName.Value, firstName.Value, rate);
                 }
-                else if (employee.Name == "partTime")
+                else if (employee.Name == EmployeePartTime.TagName)
                 {
                     XElement wageRateHour = employee.Element("wageRateHour");
                     if (!decimal.TryParse(wageRateHour.Value, out rate))
                         throw new FormatException("invalid rate");
 
-                    parsedEmployee = new EmployeeFullTime(id, lastName.Value, firstName.Value, rate);
+                    parsedEmployee = new EmployeePartTime(id, lastName.Value, firstName.Value, rate);
                 }
                 else
                 {
@@ -63,7 +63,7 @@ namespace EmployeeSalary
         public IEnumerable<Employee> GetSortedBase()
         {
             return from employee in list
-                   orderby employee.Salary, employee.LastName, employee.FirstName
+                   orderby employee.Salary descending, employee.LastName, employee.FirstName
                    select employee;
         }
 
@@ -75,14 +75,20 @@ namespace EmployeeSalary
             }
         }
 
-        public void ShowLAst3ID()
+        public void ShowLast3ID()
         {
-            foreach (Employee employee in GetSortedBase().Take(5))
+            var sortedList = GetSortedBase().ToList();
+            foreach (Employee employee in sortedList.Skip(sortedList.Count - 3))
             {
-                Console.WriteLine("ID {0} name {1} {2} salary = {3}", employee.ID, employee.FirstName, employee.LastName, employee.Salary);
+                Console.WriteLine("ID {0}", employee.ID);
             }
         }
+
+        public void SaveTo(string fileName)
+        {
+            new XDocument(new XElement("employees", 
+                from employee in list
+                select employee.ExportToXml())).Save(fileName);
+        }
     }
-
-
 }

@@ -22,5 +22,7 @@ namespace EmployeeSalary
         }
 
         protected abstract decimal CalculateSalary();
+
+        public abstract XElement ExportToXml();
     }
 }
